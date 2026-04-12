@@ -39,15 +39,13 @@ class StatsClientTest {
         dto.setIp("192.168.0.1");
         dto.setTimestamp(LocalDateTime.of(2024, 1, 10, 12, 30, 0));
 
-        String responseJson = """
-                {
-                  "id": 1,
-                  "app": "ewm-main-service",
-                  "uri": "/events/1",
-                  "ip": "192.168.0.1",
-                  "timestamp": "2024-01-10 12:30:00"
-                }
-                """;
+        String responseJson = "{"
+                              + "\"id\":1,"
+                              + "\"app\":\"ewm-main-service\","
+                              + "\"uri\":\"/events/1\","
+                              + "\"ip\":\"192.168.0.1\","
+                              + "\"timestamp\":\"2024-01-10 12:30:00\""
+                              + "}";
 
         mockServer.expect(requestTo("http://localhost:9090/hit"))
                 .andExpect(method(HttpMethod.POST))
@@ -77,20 +75,18 @@ class StatsClientTest {
                              "&uris=/events/1" +
                              "&uris=/events/2";
 
-        String responseJson = """
-                [
-                  {
-                    "app": "ewm-main-service",
-                    "uri": "/events/1",
-                    "hits": 5
-                  },
-                  {
-                    "app": "ewm-main-service",
-                    "uri": "/events/2",
-                    "hits": 3
-                  }
-                ]
-                """;
+        String responseJson = "["
+                              + "{"
+                              + "\"app\":\"ewm-main-service\","
+                              + "\"uri\":\"/events/1\","
+                              + "\"hits\":5"
+                              + "},"
+                              + "{"
+                              + "\"app\":\"ewm-main-service\","
+                              + "\"uri\":\"/events/2\","
+                              + "\"hits\":3"
+                              + "}"
+                              + "]";
 
         mockServer.expect(requestTo(expectedUrl))
                 .andExpect(method(HttpMethod.GET))
