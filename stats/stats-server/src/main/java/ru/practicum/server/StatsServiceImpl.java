@@ -25,9 +25,6 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (start == null || end == null) {
-            throw new ValidationException("start или end не может быть равен null");
-        }
 
         if (start.isAfter(end)) {
             throw new ValidationException("start не может быть после end");

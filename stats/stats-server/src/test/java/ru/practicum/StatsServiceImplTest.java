@@ -44,11 +44,11 @@ class StatsServiceImplTest {
     void create_shouldSaveEndpointAndReturnResponseDto() {
         EndpointHitRequestDto requestDto =
                 new EndpointHitRequestDto(
-                "ewm-main-service",
-                "/events",
-                "192.168.0.1",
-                LocalDateTime.of(2024, 1, 1, 12, 0, 0)
-        );
+                        "ewm-main-service",
+                        "/events",
+                        "192.168.0.1",
+                        LocalDateTime.of(2024, 1, 1, 12, 0, 0)
+                );
 
         EndpointHit endpointHit = new EndpointHit();
         endpointHit.setApp("ewm-main-service");
@@ -173,28 +173,6 @@ class StatsServiceImplTest {
         assertEquals(expected, result);
         verify(statsRepository).getStats(start, end);
         verify(statsRepository, never()).getStatsByUris(any(), any(), any());
-    }
-
-    @Test
-    void getStatsWhenStartIsNull() {
-        ValidationException ex = assertThrows(
-                ValidationException.class,
-                () -> statsService.getStats(null, end, null, false)
-        );
-
-        assertEquals("start или end не может быть равен null", ex.getMessage());
-        verifyNoInteractions(statsRepository);
-    }
-
-    @Test
-    void getStatsWhenEndIsNull() {
-        ValidationException ex = assertThrows(
-                ValidationException.class,
-                () -> statsService.getStats(start, null, null, false)
-        );
-
-        assertEquals("start или end не может быть равен null", ex.getMessage());
-        verifyNoInteractions(statsRepository);
     }
 
     @Test

@@ -188,7 +188,7 @@ class StatsControllerTest {
     @Test
     void shouldReturnBadRequestWhenStartFormatIsInvalid() throws Exception {
         mvc.perform(get("/stats")
-                        .param("start", "2024-01-01T00:00:00")
+                        .param("start", "2025")
                         .param("end", "2024-01-01 23:59:59")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -199,8 +199,8 @@ class StatsControllerTest {
     @Test
     void shouldReturnBadRequestWhenEndFormatIsInvalid() throws Exception {
         mvc.perform(get("/stats")
-                        .param("start", "2024-01-01 00:00:00")
-                        .param("end", "2024-01-01T23:59:59")
+                        .param("start", "2025")
+                        .param("end", "time")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
