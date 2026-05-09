@@ -20,6 +20,7 @@ import ru.practicum.dto.event.update.UpdateEventAdminRequest;
 import ru.practicum.dto.event.update.UpdateEventUserRequest;
 import ru.practicum.dto.event.update.UserStateAction;
 import ru.practicum.dto.stats.ViewStatsDto;
+import ru.practicum.event.location.LocationMapper;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.ParticipationRequest;
@@ -149,8 +150,8 @@ public class EventServiceImpl implements EventService {
             event.setRequestModeration(updateEvent.getRequestModeration());
         }
 
-        if (updateEvent.getLocation() != null) {
-            event.setLocation(updateEvent.getLocation());
+        if (updateEvent.getLocationDto() != null) {
+            event.setLocation(LocationMapper.toLocationEntity(updateEvent.getLocationDto()));
         }
 
         if (UserStateAction.CANCEL_REVIEW.equals(updateEvent.getStateAction())) {
@@ -344,8 +345,8 @@ public class EventServiceImpl implements EventService {
             event.setDescription(request.getDescription());
         }
 
-        if (request.getLocation() != null) {
-            event.setLocation(request.getLocation());
+        if (request.getLocationDto() != null) {
+            event.setLocation(LocationMapper.toLocationEntity(request.getLocationDto()));
         }
 
         if (request.getPaid() != null) {

@@ -9,6 +9,9 @@ import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.user.UserMapper;
 
+import static ru.practicum.event.location.LocationMapper.toLocationDto;
+import static ru.practicum.event.location.LocationMapper.toLocationEntity;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EventMapper {
     public static EventFullDto toEventFullDto(Event event) {
@@ -21,7 +24,7 @@ public final class EventMapper {
                 event.getEventDate(),
                 event.getId(),
                 UserMapper.toUserShortDto(event.getInitiator()),
-                event.getLocation(),
+                toLocationDto(event.getLocation()),
                 event.getPaid(),
                 event.getParticipantLimit(),
                 event.getPublishedOn(),
@@ -53,7 +56,7 @@ public final class EventMapper {
         event.setCategory(category);
         event.setDescription(dto.getDescription());
         event.setEventDate(dto.getEventDate());
-        event.setLocation(dto.getLocation());
+        event.setLocation(toLocationEntity(dto.getLocationDto()));
         event.setPaid(dto.getPaid() != null ? dto.getPaid() : false);
         event.setParticipantLimit(dto.getParticipantLimit() != null ? dto.getParticipantLimit() : 0);
         event.setRequestModeration(dto.getRequestModeration() != null ? dto.getRequestModeration() : true);

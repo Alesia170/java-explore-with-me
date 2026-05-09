@@ -19,6 +19,7 @@ import ru.practicum.dto.event.update.UpdateEventAdminRequest;
 import ru.practicum.dto.event.update.UpdateEventUserRequest;
 import ru.practicum.dto.event.update.UserStateAction;
 import ru.practicum.dto.stats.ViewStatsDto;
+import ru.practicum.event.location.Location;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.RequestRepository;
@@ -136,10 +137,14 @@ class EventServiceImplTest {
         request.setParticipantLimit(10);
         request.setRequestModeration(true);
 
-        Location location = new Location();
+        LocationDto location = new LocationDto();
         location.setLat(55.75F);
         location.setLon(37.61F);
-        request.setLocation(location);
+        request.setLocationDto(location);
+
+        Location location1 = new Location();
+        location.setLat(55.75F);
+        location.setLon(37.61F);
 
         Event savedEvent = new Event();
         savedEvent.setId(2L);
@@ -152,7 +157,7 @@ class EventServiceImplTest {
         savedEvent.setEventDate(request.getEventDate());
         savedEvent.setParticipantLimit(request.getParticipantLimit());
         savedEvent.setRequestModeration(request.getRequestModeration());
-        savedEvent.setLocation(location);
+        savedEvent.setLocation(location1);
         savedEvent.setState(State.PENDING);
         savedEvent.setConfirmedRequests(0);
         savedEvent.setViews(0L);

@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.category.Category;
-import ru.practicum.dto.event.Location;
 import ru.practicum.dto.event.State;
+import ru.practicum.event.location.Location;
 import ru.practicum.user.User;
 
 import java.time.LocalDateTime;
@@ -43,8 +43,11 @@ public class Event {
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "location_id", nullable = false)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lat", column = @Column(name = "lat", nullable = false)),
+            @AttributeOverride(name = "lon", column = @Column(name = "lon", nullable = false))
+    })
     private Location location;
 
     @Column(nullable = false)
