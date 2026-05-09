@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.test.web.client.MockRestServiceServer;
-import ru.practicum.dto.EndpointHitRequestDto;
+import ru.practicum.dto.stats.EndpointHitRequestDto;
 
 import java.time.LocalDateTime;
 import java.util.List;

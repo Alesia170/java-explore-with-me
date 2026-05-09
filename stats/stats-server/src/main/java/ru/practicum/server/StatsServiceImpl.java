@@ -2,9 +2,9 @@ package ru.practicum.server;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.dto.EndpointHitRequestDto;
-import ru.practicum.dto.EndpointHitResponseDto;
-import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.dto.stats.EndpointHitRequestDto;
+import ru.practicum.dto.stats.EndpointHitResponseDto;
+import ru.practicum.dto.stats.ViewStatsDto;
 import ru.practicum.server.exception.ValidationException;
 
 import java.time.LocalDateTime;

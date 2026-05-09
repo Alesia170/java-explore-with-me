@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
-import ru.practicum.dto.EndpointHitRequestDto;
+import ru.practicum.dto.stats.EndpointHitRequestDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
