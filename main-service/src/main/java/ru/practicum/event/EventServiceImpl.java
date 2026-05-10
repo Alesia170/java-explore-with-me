@@ -72,8 +72,8 @@ public class EventServiceImpl implements EventService {
 
         if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             log.warn("Попытка создать событие раньше чем через два часа от текущего момента");
-            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
-                                        "чем через два часа от текущего момента");
+            throw new ValidationException("Дата и время на которые намечено событие не может быть раньше, " +
+                                          "чем через два часа от текущего момента");
         }
 
         Event event = EventMapper.toEvent(eventDto, category);
@@ -101,7 +101,8 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEvent) {
         getUserOrThrow(userId);
-        Event event = getEventOrThrow(eventId);
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+                .orElseThrow(() -> new NotFoundException("Событие с id = " + eventId + " не найдено"));
 
         if (!(event.getState() == State.PENDING || event.getState() == State.CANCELED)) {
             log.warn("Попытка изменить, которые можно только отмененные события " +
@@ -112,8 +113,8 @@ public class EventServiceImpl implements EventService {
 
         if (updateEvent.getEventDate() != null &&
             updateEvent.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Дата и время, на которые намечено событие, " +
-                                        "не могут быть раньше чем через два часа от текущего момента");
+            throw new ValidationException("Дата и время, на которые намечено событие, " +
+                                          "не могут быть раньше чем через два часа от текущего момента");
         }
 
         if (updateEvent.getAnnotation() != null) {
@@ -310,8 +311,8 @@ public class EventServiceImpl implements EventService {
 
         if (request.getEventDate() != null &&
             request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ConflictException("Дата и время, на которые намечено событие, " +
-                                        "не могут быть раньше чем через два часа от текущего момента");
+            throw new ValidationException("Дата и время, на которые намечено событие, " +
+                                          "не могут быть раньше чем через два часа от текущего момента");
         }
 
         if (request.getStateAction() == AdminStateAction.PUBLISH_EVENT) {
@@ -344,6 +345,10 @@ public class EventServiceImpl implements EventService {
 
         if (request.getDescription() != null) {
             event.setDescription(request.getDescription());
+        }
+
+        if (request.getEventDate() != null) {
+            event.setEventDate(request.getEventDate());
         }
 
         if (request.getLocation() != null) {

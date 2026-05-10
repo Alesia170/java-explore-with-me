@@ -21,6 +21,7 @@ import ru.practicum.dto.event.update.UserStateAction;
 import ru.practicum.dto.stats.ViewStatsDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.request.RequestRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
@@ -228,7 +229,7 @@ class EventServiceImplTest {
         when(categoryRepository.findById(category.getId()))
                 .thenReturn(Optional.of(category));
 
-        assertThrows(ConflictException.class,
+        assertThrows(ValidationException.class,
                 () -> eventService.createNewEvent(user.getId(), request));
 
         verify(userRepository).findById(user.getId());
@@ -269,44 +270,44 @@ class EventServiceImplTest {
     @Test
     void shouldUpdateEvent() {
         UpdateEventUserRequest request = new UpdateEventUserRequest();
-        request.setTitle("Updated title");
-        request.setAnnotation("Updated annotation");
+        request.setTitle("Updated title title");
+        request.setAnnotation("Updated annotation annotation");
         request.setStateAction(UserStateAction.CANCEL_REVIEW);
 
         event.setState(State.PENDING);
 
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
-        when(eventRepository.findById(event.getId()))
+        when(eventRepository.findByIdAndInitiatorId(event.getId(), user.getId()))
                 .thenReturn(Optional.of(event));
 
         EventFullDto result = eventService.updateEvent(user.getId(), event.getId(), request);
 
-        assertEquals("Updated title", result.getTitle());
-        assertEquals("Updated annotation", result.getAnnotation());
+        assertEquals("Updated title title", result.getTitle());
+        assertEquals("Updated annotation annotation", result.getAnnotation());
         assertEquals(State.CANCELED, result.getState());
 
         verify(userRepository).findById(user.getId());
-        verify(eventRepository).findById(event.getId());
+        verify(eventRepository).findByIdAndInitiatorId(event.getId(), user.getId());
     }
 
     @Test
     void shouldUpdateEventWhenEventIsPublishedThenThrowConflictException() {
         UpdateEventUserRequest request = new UpdateEventUserRequest();
-        request.setTitle("Updated title");
+        request.setTitle("Updated title Updated title");
 
         event.setState(State.PUBLISHED);
 
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
-        when(eventRepository.findById(event.getId()))
+        when(eventRepository.findByIdAndInitiatorId(event.getId(), user.getId()))
                 .thenReturn(Optional.of(event));
 
         assertThrows(ConflictException.class,
                 () -> eventService.updateEvent(user.getId(), event.getId(), request));
 
         verify(userRepository).findById(user.getId());
-        verify(eventRepository).findById(event.getId());
+        verify(eventRepository).findByIdAndInitiatorId(event.getId(), user.getId());
     }
 
     @Test
@@ -318,14 +319,14 @@ class EventServiceImplTest {
 
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
-        when(eventRepository.findById(event.getId()))
+        when(eventRepository.findByIdAndInitiatorId(event.getId(), user.getId()))
                 .thenReturn(Optional.of(event));
 
-        assertThrows(ConflictException.class,
+        assertThrows(ValidationException.class,
                 () -> eventService.updateEvent(user.getId(), event.getId(), request));
 
         verify(userRepository).findById(user.getId());
-        verify(eventRepository).findById(event.getId());
+        verify(eventRepository).findByIdAndInitiatorId(event.getId(), user.getId());
     }
 
     @Test
@@ -337,7 +338,7 @@ class EventServiceImplTest {
 
         when(userRepository.findById(user.getId()))
                 .thenReturn(Optional.of(user));
-        when(eventRepository.findById(event.getId()))
+        when(eventRepository.findByIdAndInitiatorId(event.getId(), user.getId()))
                 .thenReturn(Optional.of(event));
         when(categoryRepository.findById(99L))
                 .thenReturn(Optional.empty());
@@ -346,7 +347,7 @@ class EventServiceImplTest {
                 () -> eventService.updateEvent(user.getId(), event.getId(), request));
 
         verify(userRepository).findById(user.getId());
-        verify(eventRepository).findById(event.getId());
+        verify(eventRepository).findByIdAndInitiatorId(event.getId(), user.getId());
         verify(categoryRepository).findById(99L);
     }
 
@@ -495,7 +496,7 @@ class EventServiceImplTest {
         when(eventRepository.findById(event.getId()))
                 .thenReturn(Optional.of(event));
 
-        assertThrows(ConflictException.class,
+        assertThrows(ValidationException.class,
                 () -> eventService.updateEventByAdmin(event.getId(), request));
 
         verify(eventRepository).findById(event.getId());

@@ -84,8 +84,8 @@ class AdminEventControllerTest {
     @Test
     void shouldReturn200WhenUpdateEventByAdminWithValidRequest() throws Exception {
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
-        request.setAnnotation("New annotation");
-        request.setTitle("New title");
+        request.setAnnotation("New annotation annotation");
+        request.setTitle("New title title");
 
         when(eventService.updateEventByAdmin(eq(1L), any(UpdateEventAdminRequest.class)))
                 .thenReturn(new EventFullDto());
