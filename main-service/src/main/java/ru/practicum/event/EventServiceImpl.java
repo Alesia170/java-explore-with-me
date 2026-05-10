@@ -150,8 +150,8 @@ public class EventServiceImpl implements EventService {
             event.setRequestModeration(updateEvent.getRequestModeration());
         }
 
-        if (updateEvent.getLocationDto() != null) {
-            event.setLocation(LocationMapper.toLocationEntity(updateEvent.getLocationDto()));
+        if (updateEvent.getLocation() != null) {
+            event.setLocation(LocationMapper.toLocationEntity(updateEvent.getLocation()));
         }
 
         if (UserStateAction.CANCEL_REVIEW.equals(updateEvent.getStateAction())) {
@@ -345,8 +345,8 @@ public class EventServiceImpl implements EventService {
             event.setDescription(request.getDescription());
         }
 
-        if (request.getLocationDto() != null) {
-            event.setLocation(LocationMapper.toLocationEntity(request.getLocationDto()));
+        if (request.getLocation() != null) {
+            event.setLocation(LocationMapper.toLocationEntity(request.getLocation()));
         }
 
         if (request.getPaid() != null) {
@@ -376,9 +376,17 @@ public class EventServiceImpl implements EventService {
             rangeStart = LocalDateTime.now();
         }
 
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.of(2000, 1, 1, 1, 1);
+        }
+
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.of(2099, 1, 1, 1, 1);
+        }
+
         boolean categoriesIsEmpty = categoryIds == null || categoryIds.isEmpty();
         List<Long> safeCategories = categoriesIsEmpty ? List.of(-1L) : categoryIds;
-        String sortValue = sort == null ? null : sort.name();
+        String sortValue = sort == null ? "EVENT_DATE" : sort.name();
 
         List<Event> events = eventRepository.getEventsByPublic(
                 text,

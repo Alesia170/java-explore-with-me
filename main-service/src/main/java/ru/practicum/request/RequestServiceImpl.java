@@ -15,6 +15,7 @@ import ru.practicum.user.User;
 import ru.practicum.user.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +30,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
+        getUserOrThrow(userId);
 
         List<ParticipationRequest> requests = requestRepository.findByRequesterId(userId);
 
@@ -71,7 +73,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         ParticipationRequest request = new ParticipationRequest();
-        request.setCreated(LocalDateTime.now());
+        request.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
         request.setRequester(requester);
         request.setEvent(event);
 
@@ -99,18 +101,18 @@ public class RequestServiceImpl implements RequestService {
                     return new NotFoundException("Запрос с id = " + requestId + " не найден");
                 });
 
-        if (!request.getStatus().equals(RequestStatus.CANCELED)) {
-            request.setStatus(RequestStatus.CANCELED);
-        }
-
         if (!request.getRequester().getId().equals(userId)) {
             log.warn("Пользователь пытается отменить чужой запрос");
             throw new ConflictException("Нельзя отменить чужой запрос на участие");
         }
 
+        if (!request.getStatus().equals(RequestStatus.CANCELED)) {
+            request.setStatus(RequestStatus.CANCELED);
+        }
+
         ParticipationRequest updatedRequest = requestRepository.save(request);
 
-         log.info("Отмена своего запроса на участие в событии");
+        log.info("Отмена своего запроса на участие в событии");
 
         return ParticipationRequestMapper.toParticipationDto(updatedRequest);
     }

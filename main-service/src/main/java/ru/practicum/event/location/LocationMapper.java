@@ -2,23 +2,23 @@ package ru.practicum.event.location;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.dto.event.LocationDto;
+import ru.practicum.dto.event.Location;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LocationMapper {
-    public static Location toLocationEntity(LocationDto dto) {
+    public static ru.practicum.event.location.Location toLocationEntity(Location dto) {
         if (dto == null) {
             return null;
         }
 
-        return new Location(dto.getLat(), dto.getLon());
+        return new ru.practicum.event.location.Location(dto.getLat(), dto.getLon());
     }
 
-    public static LocationDto toLocationDto(Location location) {
+    public static Location toLocationDto(ru.practicum.event.location.Location location) {
         if (location == null) {
             return null;
         }
 
-        return new LocationDto(location.getLat(), location.getLon());
+        return new Location(location.getLat(), location.getLon());
     }
 }

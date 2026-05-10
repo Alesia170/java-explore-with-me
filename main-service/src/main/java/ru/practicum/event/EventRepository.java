@@ -65,8 +65,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                       )
                       AND (:categoriesIsEmpty = true OR category_id IN (:categories))
                       AND (:paid IS NULL OR paid = :paid)
-                      AND (:rangeStart IS NULL OR event_date >= :rangeStart)
-                      AND (:rangeEnd IS NULL OR event_date <= :rangeEnd)
+                      AND event_date >= :rangeStart
+                      AND event_date <= :rangeEnd
                       AND (
                             :onlyAvailable = false
                             OR participant_limit = 0

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.dto.event.LocationDto;
+import ru.practicum.dto.event.Location;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +28,7 @@ public class UpdateEventAdminRequest {
     private LocalDateTime eventDate;
 
     @JsonProperty("location")
-    private LocationDto locationDto;
+    private Location location;
 
     private Boolean paid;
 
