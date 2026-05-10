@@ -59,12 +59,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                     FROM events
                     WHERE state = 'PUBLISHED'
                       AND (
-                            :text IS NULL
+                            :textIsBlank = true
                             OR LOWER(annotation) LIKE LOWER(CONCAT('%', :text, '%'))
                             OR LOWER(description) LIKE LOWER(CONCAT('%', :text, '%'))
                       )
                       AND (:categoriesIsEmpty = true OR category_id IN (:categories))
-                      AND (:paid IS NULL OR paid = :paid)
+                      AND (:paidIsNull OR paid = :paid)
                       AND event_date >= :rangeStart
                       AND event_date <= :rangeEnd
                       AND (
@@ -81,9 +81,11 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             nativeQuery = true
     )
     List<Event> getEventsByPublic(@Param("text") String text,
+                                  @Param("textIsBlank") boolean textIsBlank,
                                   @Param("categories") List<Long> categories,
                                   @Param("categoriesIsEmpty") boolean categoriesIsEmpty,
                                   @Param("paid") Boolean paid,
+                                  @Param("paidIsNull") boolean paidIsNull,
                                   @Param("rangeStart") LocalDateTime rangeStart,
                                   @Param("rangeEnd") LocalDateTime rangeEnd,
                                   @Param("onlyAvailable") boolean onlyAvailable,

@@ -512,9 +512,11 @@ class EventServiceImplTest {
 
         when(eventRepository.getEventsByPublic(
                 any(),
+                anyBoolean(),
                 anyList(),
                 anyBoolean(),
                 any(),
+                anyBoolean(),
                 any(),
                 any(),
                 anyBoolean(),
@@ -547,9 +549,11 @@ class EventServiceImplTest {
 
         verify(eventRepository).getEventsByPublic(
                 any(),
+                anyBoolean(),
                 anyList(),
                 anyBoolean(),
                 any(),
+                anyBoolean(),
                 any(),
                 any(),
                 eq(false),
@@ -564,9 +568,11 @@ class EventServiceImplTest {
     void shouldGetEventsByPublicWhenNothingFoundThenReturnEmptyList() {
         when(eventRepository.getEventsByPublic(
                 any(),
+                anyBoolean(),
                 anyList(),
                 anyBoolean(),
                 any(),
+                anyBoolean(),
                 any(),
                 any(),
                 anyBoolean(),

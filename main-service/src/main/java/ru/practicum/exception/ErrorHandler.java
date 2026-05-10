@@ -77,6 +77,18 @@ public class ErrorHandler {
         );
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleValidationException(ValidationException exception) {
+        return new ApiError(
+                List.of(),
+                exception.getMessage(),
+                "Incorrectly made request.",
+                HttpStatus.BAD_REQUEST.name(),
+                LocalDateTime.now().format(FORMATTER)
+        );
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleConstraintViolationException(ConstraintViolationException exception) {

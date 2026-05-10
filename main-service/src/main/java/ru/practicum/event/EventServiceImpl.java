@@ -23,6 +23,7 @@ import ru.practicum.dto.stats.ViewStatsDto;
 import ru.practicum.event.location.LocationMapper;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.request.ParticipationRequest;
 import ru.practicum.request.ParticipationRequestMapper;
 import ru.practicum.request.RequestRepository;
@@ -372,29 +373,37 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> getEventsByPublic(String text, List<Long> categoryIds, Boolean paid, LocalDateTime rangeStart,
                                                  LocalDateTime rangeEnd, boolean onlyAvailable,
                                                  EventSort sort, int from, int size) {
-        if (rangeStart == null && rangeEnd == null) {
+        if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
 
-        if (rangeStart == null) {
-            rangeStart = LocalDateTime.of(2000, 1, 1, 1, 1);
+        if (rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+            throw new ValidationException("rangeStart не может быть позже rangeEnd");
         }
 
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.of(2099, 1, 1, 1, 1);
-        }
+        boolean textIsBlank = text == null || text.isBlank();
+        String safeText = textIsBlank ? "" : text;
+
+        boolean paidIsNull = paid == null;
+        Boolean safePaid = !paidIsNull && paid;
+
+        LocalDateTime safeRangeEnd = rangeEnd == null
+                ? LocalDateTime.of(2099, 12, 31, 23, 59, 59)
+                : rangeEnd;
 
         boolean categoriesIsEmpty = categoryIds == null || categoryIds.isEmpty();
         List<Long> safeCategories = categoriesIsEmpty ? List.of(-1L) : categoryIds;
         String sortValue = sort == null ? "EVENT_DATE" : sort.name();
 
         List<Event> events = eventRepository.getEventsByPublic(
-                text,
+                safeText,
+                textIsBlank,
                 safeCategories,
                 categoriesIsEmpty,
-                paid,
+                safePaid,
+                paidIsNull,
                 rangeStart,
-                rangeEnd,
+                safeRangeEnd,
                 onlyAvailable,
                 sortValue,
                 from,
