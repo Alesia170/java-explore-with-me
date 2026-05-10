@@ -31,7 +31,7 @@ public class Event {
     private Integer confirmedRequests = 0;
 
     @Column(name = "created_on", nullable = false)
-    private LocalDateTime createdOn;
+    private LocalDateTime createdOn = LocalDateTime.now();
 
     @Column(nullable = false, length = 7000)
     private String description;
@@ -63,7 +63,7 @@ public class Event {
     private Boolean requestModeration = true;
 
     @Enumerated(EnumType.STRING)
-    private State state;
+    private State state = State.PENDING;
 
     @Column(nullable = false, length = 120)
     private String title;

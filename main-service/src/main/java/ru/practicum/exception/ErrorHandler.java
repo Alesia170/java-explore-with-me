@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +20,18 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidationException(MethodArgumentNotValidException exception) {
+        return new ApiError(
+                List.of(exception.getMessage()),
+                exception.getMessage(),
+                "Incorrectly made request.",
+                HttpStatus.BAD_REQUEST.name(),
+                LocalDateTime.now().format(FORMATTER)
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
         return new ApiError(
                 List.of(exception.getMessage()),
                 exception.getMessage(),
