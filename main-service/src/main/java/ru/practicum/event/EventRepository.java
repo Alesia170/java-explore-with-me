@@ -28,30 +28,47 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
 
-    @Query(
-            value = """
-                    SELECT *
-                    FROM events e
-                    WHERE (:userIdsIsEmpty = true OR e.initiator_id IN (:userIds))
-                      AND (:statesIsEmpty = true OR e.state IN (:states))
-                      AND (:categoriesIsEmpty = true OR e.category_id IN (:categories))
-                      AND (:rangeStart IS NULL OR e.event_date >= :rangeStart)
-                      AND (:rangeEnd IS NULL OR e.event_date <= :rangeEnd)
-                    ORDER BY e.id
-                    LIMIT :size OFFSET :from
-                    """,
-            nativeQuery = true
-    )
-    List<Event> getEventsByAdmin(@Param("userIds") List<Long> userIds,
-                                 @Param("userIdsIsEmpty") boolean userIdsIsEmpty,
-                                 @Param("states") List<String> states,
-                                 @Param("statesIsEmpty") boolean statesIsEmpty,
-                                 @Param("categories") List<Long> categories,
-                                 @Param("categoriesIsEmpty") boolean categoriesIsEmpty,
-                                 @Param("rangeStart") LocalDateTime rangeStart,
-                                 @Param("rangeEnd") LocalDateTime rangeEnd,
-                                 @Param("from") int from,
-                                 @Param("size") int size);
+    @Query(value = """
+            SELECT *
+            FROM events e
+            WHERE (:userIdsIsEmpty = true OR e.initiator_id IN (:userIds))
+              AND (:statesIsEmpty = true OR CAST(e.state AS TEXT) IN (:states))
+              AND (:categoriesIsEmpty = true OR e.category_id IN (:categories))
+              AND e.event_date >= :rangeStart
+              AND e.event_date <= :rangeEnd
+            ORDER BY e.id
+            LIMIT :size OFFSET :from
+            """, nativeQuery = true)
+    List<Event> getEventsByAdminWithEndDate(@Param("userIds") List<Long> userIds,
+                                            @Param("userIdsIsEmpty") boolean userIdsIsEmpty,
+                                            @Param("states") List<String> states,
+                                            @Param("statesIsEmpty") boolean statesIsEmpty,
+                                            @Param("categories") List<Long> categories,
+                                            @Param("categoriesIsEmpty") boolean categoriesIsEmpty,
+                                            @Param("rangeStart") LocalDateTime rangeStart,
+                                            @Param("rangeEnd") LocalDateTime rangeEnd,
+                                            @Param("from") int from,
+                                            @Param("size") int size);
+
+    @Query(value = """
+            SELECT *
+            FROM events e
+            WHERE (:userIdsIsEmpty = true OR e.initiator_id IN (:userIds))
+              AND (:statesIsEmpty = true OR CAST(e.state AS TEXT) IN (:states))
+              AND (:categoriesIsEmpty = true OR e.category_id IN (:categories))
+              AND e.event_date >= :rangeStart
+            ORDER BY e.id
+            LIMIT :size OFFSET :from
+            """, nativeQuery = true)
+    List<Event> getEventsByAdminWithoutEndDate(@Param("userIds") List<Long> userIds,
+                                               @Param("userIdsIsEmpty") boolean userIdsIsEmpty,
+                                               @Param("states") List<String> states,
+                                               @Param("statesIsEmpty") boolean statesIsEmpty,
+                                               @Param("categories") List<Long> categories,
+                                               @Param("categoriesIsEmpty") boolean categoriesIsEmpty,
+                                               @Param("rangeStart") LocalDateTime rangeStart,
+                                               @Param("from") int from,
+                                               @Param("size") int size);
 
     @Query(
             value = """

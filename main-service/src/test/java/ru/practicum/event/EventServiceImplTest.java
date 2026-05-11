@@ -360,17 +360,16 @@ class EventServiceImplTest {
         stat.setUri("/events/" + event.getId());
         stat.setHits(5L);
 
-        when(eventRepository.getEventsByAdmin(
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                any(),
-                any(),
-                anyInt(),
-                anyInt()
+        when(eventRepository.getEventsByAdminWithoutEndDate(
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                any(LocalDateTime.class),
+                eq(0),
+                eq(10)
         )).thenReturn(List.of(event));
 
         when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
@@ -393,15 +392,14 @@ class EventServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(5L, result.getFirst().getViews());
 
-        verify(eventRepository).getEventsByAdmin(
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                any(),
-                any(),
+        verify(eventRepository).getEventsByAdminWithoutEndDate(
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                any(LocalDateTime.class),
                 eq(0),
                 eq(10)
         );
@@ -410,17 +408,16 @@ class EventServiceImplTest {
 
     @Test
     void shouldGetEventsByAdminWhenNoEventsFoundThenReturnEmptyList() {
-        when(eventRepository.getEventsByAdmin(
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                anyList(),
-                anyBoolean(),
-                any(),
-                any(),
-                anyInt(),
-                anyInt()
+        when(eventRepository.getEventsByAdminWithoutEndDate(
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                any(LocalDateTime.class),
+                eq(0),
+                eq(10)
         )).thenReturn(List.of());
 
         List<EventFullDto> result = eventService.getEventsByAdmin(
@@ -436,6 +433,65 @@ class EventServiceImplTest {
         assertTrue(result.isEmpty());
 
         verify(statsClient, never()).getStats(any(), any(), anyList(), anyBoolean());
+    }
+
+    @Test
+    void shouldGetEventsByAdminWithRangeEndWhenEventsFoundThenReturnEventsWithViews() {
+        event.setState(State.PUBLISHED);
+
+        LocalDateTime rangeStart = LocalDateTime.now().minusDays(1);
+        LocalDateTime rangeEnd = LocalDateTime.now().plusDays(30);
+
+        ViewStatsDto stat = new ViewStatsDto();
+        stat.setApp("ewm-main-service");
+        stat.setUri("/events/" + event.getId());
+        stat.setHits(5L);
+
+        when(eventRepository.getEventsByAdminWithEndDate(
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                eq(0),
+                eq(10)
+        )).thenReturn(List.of(event));
+
+        when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
+                .thenReturn(ResponseEntity.ok(List.of(stat)));
+
+        doReturn(List.of(stat))
+                .when(objectMapper)
+                .convertValue(any(), ArgumentMatchers.<TypeReference<List<ViewStatsDto>>>any());
+
+        List<EventFullDto> result = eventService.getEventsByAdmin(
+                null,
+                null,
+                null,
+                rangeStart,
+                rangeEnd,
+                0,
+                10
+        );
+
+        assertEquals(1, result.size());
+        assertEquals(5L, result.getFirst().getViews());
+
+        verify(eventRepository).getEventsByAdminWithEndDate(
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                isNull(),
+                eq(true),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class),
+                eq(0),
+                eq(10)
+        );
     }
 
     @Test

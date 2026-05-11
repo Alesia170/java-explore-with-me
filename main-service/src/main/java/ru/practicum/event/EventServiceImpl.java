@@ -262,30 +262,50 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> userIds, List<State> states, List<Long> categories,
                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+            throw new ValidationException("rangeStart не может быть позже rangeEnd");
+        }
+
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+        }
+
         boolean userIdsIsEmpty = userIds == null || userIds.isEmpty();
         boolean statesIsEmpty = states == null || states.isEmpty();
         boolean categoriesIsEmpty = categories == null || categories.isEmpty();
 
-        List<Long> safeUserIds = userIdsIsEmpty ? List.of(-1L) : userIds;
-        List<Long> safeCategories = categoriesIsEmpty ? List.of(-1L) : categories;
-        List<String> safeStates = statesIsEmpty ? List.of("__EMPTY__") :
-                states.stream()
-                        .map(Enum::name)
-                        .toList();
+        List<Long> safeUserIds = userIdsIsEmpty ? null : userIds;
+        List<String> safeStates = statesIsEmpty ? null :
+                states.stream().map(Enum::name).toList();
+        List<Long> safeCategories = categoriesIsEmpty ? null : categories;
 
-        List<Event> events = eventRepository.getEventsByAdmin(
-                safeUserIds,
-                userIdsIsEmpty,
-                safeStates,
-                statesIsEmpty,
-                safeCategories,
-                categoriesIsEmpty,
-                rangeStart,
-                rangeEnd,
-                from,
-                size
-        );
-
+        List<Event> events;
+        if (rangeEnd == null) {
+            events = eventRepository.getEventsByAdminWithoutEndDate(
+                    safeUserIds,
+                    userIdsIsEmpty,
+                    safeStates,
+                    statesIsEmpty,
+                    safeCategories,
+                    categoriesIsEmpty,
+                    rangeStart,
+                    from,
+                    size
+            );
+        } else {
+            events = eventRepository.getEventsByAdminWithEndDate(
+                    safeUserIds,
+                    userIdsIsEmpty,
+                    safeStates,
+                    statesIsEmpty,
+                    safeCategories,
+                    categoriesIsEmpty,
+                    rangeStart,
+                    rangeEnd,
+                    from,
+                    size
+            );
+        }
         Map<String, Long> views = getViewsFromStats(
                 events.stream()
                         .map(event -> "/events/" + event.getId())
