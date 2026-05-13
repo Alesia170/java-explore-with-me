@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.dto.stats.EndpointHitRequestDto;
+import ru.practicum.dto.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,18 +19,30 @@ public class StatsClient extends BaseClient {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private final String serviceName;
+
     @Autowired
-    public StatsClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatsClient(@Value("${stats-server.url}") String serverUrl,
+                       @Value("${ewm.service.name}") String serviceName,
+                       RestTemplateBuilder builder) {
         super(builder
                 .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                 .build());
+        this.serviceName = serviceName;
     }
 
-    public ResponseEntity<Object> create(EndpointHitRequestDto dto) {
+    public ResponseEntity<Object> create(String uri, String ip) {
+        EndpointHitRequestDto dto = new EndpointHitRequestDto(
+                serviceName,
+                uri,
+                ip,
+                LocalDateTime.now()
+        );
         return post(dto);
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+    public ResponseEntity<List<ViewStatsDto>> getStats(LocalDateTime start, LocalDateTime end,
+                                                       List<String> uris, boolean unique) {
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromPath("/stats")
                 .queryParam("start", start.format(FORMATTER))
                 .queryParam("end", end.format(FORMATTER))
@@ -41,7 +54,7 @@ public class StatsClient extends BaseClient {
             }
         }
 
-        return get(uriComponentsBuilder.build().toUriString());
+        return getStats(uriComponentsBuilder.build().toUriString());
     }
 }
 

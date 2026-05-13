@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -20,8 +19,4 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     )
     List<Category> findAllWithOffset(@Param("from") int from,
                                      @Param("size") int size);
-
-    boolean existsByName(String name);
-
-    Optional<Category> findByName(String name);
 }

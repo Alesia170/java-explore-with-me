@@ -1,11 +1,8 @@
 package ru.practicum.event;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -51,9 +48,6 @@ class EventServiceImplTest {
 
     @Mock
     private StatsClient statsClient;
-
-    @Mock
-    private ObjectMapper objectMapper;
 
     @InjectMocks
     private EventServiceImpl eventService;
@@ -354,9 +348,9 @@ class EventServiceImplTest {
     @Test
     void shouldGetEventsByAdminWhenEventsFoundThenReturnEventsWithViews() {
         event.setState(State.PUBLISHED);
+        AdminEventParams params = new AdminEventParams();
 
         ViewStatsDto stat = new ViewStatsDto();
-        stat.setApp("ewm-main-service");
         stat.setUri("/events/" + event.getId());
         stat.setHits(5L);
 
@@ -375,19 +369,7 @@ class EventServiceImplTest {
         when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(ResponseEntity.ok(List.of(stat)));
 
-        doReturn(List.of(stat))
-                .when(objectMapper)
-                .convertValue(any(), ArgumentMatchers.<TypeReference<List<ViewStatsDto>>>any());
-
-        List<EventFullDto> result = eventService.getEventsByAdmin(
-                null,
-                null,
-                null,
-                null,
-                null,
-                0,
-                10
-        );
+        List<EventFullDto> result = eventService.getEventsByAdmin(params);
 
         assertEquals(1, result.size());
         assertEquals(5L, result.getFirst().getViews());
@@ -408,6 +390,7 @@ class EventServiceImplTest {
 
     @Test
     void shouldGetEventsByAdminWhenNoEventsFoundThenReturnEmptyList() {
+        AdminEventParams params = new AdminEventParams();
         when(eventRepository.getEventsByAdminWithoutEndDate(
                 isNull(),
                 eq(true),
@@ -420,15 +403,7 @@ class EventServiceImplTest {
                 eq(10)
         )).thenReturn(List.of());
 
-        List<EventFullDto> result = eventService.getEventsByAdmin(
-                null,
-                null,
-                null,
-                null,
-                null,
-                0,
-                10
-        );
+        List<EventFullDto> result = eventService.getEventsByAdmin(params);
 
         assertTrue(result.isEmpty());
 
@@ -438,12 +413,15 @@ class EventServiceImplTest {
     @Test
     void shouldGetEventsByAdminWithRangeEndWhenEventsFoundThenReturnEventsWithViews() {
         event.setState(State.PUBLISHED);
+        AdminEventParams params = new AdminEventParams();
 
         LocalDateTime rangeStart = LocalDateTime.now().minusDays(1);
         LocalDateTime rangeEnd = LocalDateTime.now().plusDays(30);
 
+        params.setRangeStart(rangeStart);
+        params.setRangeEnd(rangeEnd);
+
         ViewStatsDto stat = new ViewStatsDto();
-        stat.setApp("ewm-main-service");
         stat.setUri("/events/" + event.getId());
         stat.setHits(5L);
 
@@ -463,19 +441,7 @@ class EventServiceImplTest {
         when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(ResponseEntity.ok(List.of(stat)));
 
-        doReturn(List.of(stat))
-                .when(objectMapper)
-                .convertValue(any(), ArgumentMatchers.<TypeReference<List<ViewStatsDto>>>any());
-
-        List<EventFullDto> result = eventService.getEventsByAdmin(
-                null,
-                null,
-                null,
-                rangeStart,
-                rangeEnd,
-                0,
-                10
-        );
+        List<EventFullDto> result = eventService.getEventsByAdmin(params);
 
         assertEquals(1, result.size());
         assertEquals(5L, result.getFirst().getViews());
@@ -561,9 +527,9 @@ class EventServiceImplTest {
     @Test
     void shouldGetEventsByPublic() {
         event.setState(State.PUBLISHED);
+        PublicEventsParams params = new PublicEventsParams();
 
         ViewStatsDto stat = new ViewStatsDto();
-        stat.setApp("ewm-main-service");
         stat.setUri("/events/" + event.getId());
         stat.setHits(7L);
 
@@ -585,21 +551,7 @@ class EventServiceImplTest {
         when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(ResponseEntity.ok(List.of(stat)));
 
-        doReturn(List.of(stat))
-                .when(objectMapper)
-                .convertValue(any(), ArgumentMatchers.<TypeReference<List<ViewStatsDto>>>any());
-
-        List<EventShortDto> result = eventService.getEventsByPublic(
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                null,
-                0,
-                10
-        );
+        List<EventShortDto> result = eventService.getEventsByPublic(params);
 
         assertEquals(1, result.size());
         assertEquals(7L, result.getFirst().getViews());
@@ -623,6 +575,7 @@ class EventServiceImplTest {
 
     @Test
     void shouldGetEventsByPublicWhenNothingFoundThenReturnEmptyList() {
+        PublicEventsParams params = new PublicEventsParams();
         when(eventRepository.getEventsByPublic(
                 any(),
                 anyBoolean(),
@@ -638,17 +591,7 @@ class EventServiceImplTest {
                 anyInt()
         )).thenReturn(List.of());
 
-        List<EventShortDto> result = eventService.getEventsByPublic(
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                null,
-                0,
-                10
-        );
+        List<EventShortDto> result = eventService.getEventsByPublic(params);
 
         assertTrue(result.isEmpty());
 
@@ -660,7 +603,6 @@ class EventServiceImplTest {
         event.setState(State.PUBLISHED);
 
         ViewStatsDto stat = new ViewStatsDto();
-        stat.setApp("ewm-main-service");
         stat.setUri("/events/" + event.getId());
         stat.setHits(10L);
 
@@ -670,9 +612,6 @@ class EventServiceImplTest {
                 .thenReturn(3);
         when(statsClient.getStats(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(true)))
                 .thenReturn(ResponseEntity.ok(List.of(stat)));
-        doReturn(List.of(stat))
-                .when(objectMapper)
-                .convertValue(any(), ArgumentMatchers.<TypeReference<List<ViewStatsDto>>>any());
 
         EventFullDto result = eventService.getEventByPublic(event.getId());
 

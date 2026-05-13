@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.dto.event.AdminEventParams;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.State;
 import ru.practicum.dto.event.update.UpdateEventAdminRequest;
@@ -36,15 +37,8 @@ class AdminEventControllerTest {
 
     @Test
     void shouldReturn200WhenGetEventsByAdminWithValidParams() throws Exception {
-        when(eventService.getEventsByAdmin(
-                anyList(),
-                anyList(),
-                anyList(),
-                any(),
-                any(),
-                anyInt(),
-                anyInt()
-        )).thenReturn(List.of(new EventFullDto()));
+        when(eventService.getEventsByAdmin(any(AdminEventParams.class)))
+                .thenReturn(List.of(new EventFullDto()));
 
         mockMvc.perform(get("/admin/events")
                         .param("users", "1", "2")

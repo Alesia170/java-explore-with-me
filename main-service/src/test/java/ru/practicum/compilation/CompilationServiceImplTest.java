@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import ru.practicum.category.Category;
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
@@ -148,11 +149,9 @@ class CompilationServiceImplTest {
         savedCompilation.setPinned(request.getPinned());
         savedCompilation.setEvents(Set.of(event));
 
-        when(compilationRepository.existsByTitle(request.getTitle()))
-                .thenReturn(false);
         when(eventRepository.findAllById(Set.of(event.getId())))
                 .thenReturn(List.of(event));
-        when(compilationRepository.save(any(Compilation.class)))
+        when(compilationRepository.saveAndFlush(any(Compilation.class)))
                 .thenReturn(savedCompilation);
 
         CompilationDto result = compilationService.createCompilation(request);
@@ -161,9 +160,8 @@ class CompilationServiceImplTest {
         assertEquals(request.getTitle(), result.getTitle());
         assertEquals(request.getPinned(), result.getPinned());
 
-        verify(compilationRepository).existsByTitle(request.getTitle());
         verify(eventRepository).findAllById(Set.of(event.getId()));
-        verify(compilationRepository).save(any(Compilation.class));
+        verify(compilationRepository).saveAndFlush(any(Compilation.class));
     }
 
     @Test
@@ -173,15 +171,17 @@ class CompilationServiceImplTest {
         request.setPinned(false);
         request.setEvents(List.of(event.getId()));
 
-        when(compilationRepository.existsByTitle(request.getTitle()))
-                .thenReturn(true);
+        when(eventRepository.findAllById(Set.of(event.getId())))
+                .thenReturn(List.of(event));
+
+        when(compilationRepository.saveAndFlush(any(Compilation.class)))
+                .thenThrow(new DataIntegrityViolationException("Подборка с таким заголовком уже существует"));
 
         assertThrows(ConflictException.class,
                 () -> compilationService.createCompilation(request));
 
-        verify(compilationRepository).existsByTitle(request.getTitle());
-        verify(eventRepository, never()).findAllById(any());
-        verify(compilationRepository, never()).save(any());
+        verify(eventRepository).findAllById(Set.of(event.getId()));
+        verify(compilationRepository).saveAndFlush(any(Compilation.class));
     }
 
     @Test
@@ -191,17 +191,14 @@ class CompilationServiceImplTest {
         request.setPinned(false);
         request.setEvents(List.of(1L, 2L));
 
-        when(compilationRepository.existsByTitle(request.getTitle()))
-                .thenReturn(false);
         when(eventRepository.findAllById(Set.of(1L, 2L)))
                 .thenReturn(List.of(event));
 
         assertThrows(NotFoundException.class,
                 () -> compilationService.createCompilation(request));
 
-        verify(compilationRepository).existsByTitle(request.getTitle());
         verify(eventRepository).findAllById(Set.of(1L, 2L));
-        verify(compilationRepository, never()).save(any());
+        verify(compilationRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -217,9 +214,7 @@ class CompilationServiceImplTest {
         savedCompilation.setPinned(request.getPinned());
         savedCompilation.setEvents(Set.of());
 
-        when(compilationRepository.existsByTitle(request.getTitle()))
-                .thenReturn(false);
-        when(compilationRepository.save(any(Compilation.class)))
+        when(compilationRepository.saveAndFlush(any(Compilation.class)))
                 .thenReturn(savedCompilation);
 
         CompilationDto result = compilationService.createCompilation(request);
@@ -228,9 +223,8 @@ class CompilationServiceImplTest {
         assertEquals(request.getTitle(), result.getTitle());
         assertTrue(result.getEvents().isEmpty());
 
-        verify(compilationRepository).existsByTitle(request.getTitle());
         verify(eventRepository, never()).findAllById(any());
-        verify(compilationRepository).save(any(Compilation.class));
+        verify(compilationRepository).saveAndFlush(any(Compilation.class));
     }
 
     @Test
@@ -271,11 +265,9 @@ class CompilationServiceImplTest {
 
         when(compilationRepository.findById(compilation.getId()))
                 .thenReturn(Optional.of(compilation));
-        when(compilationRepository.findByTitle(request.getTitle()))
-                .thenReturn(Optional.empty());
         when(eventRepository.findAllById(Set.of(event.getId())))
                 .thenReturn(List.of(event));
-        when(compilationRepository.save(compilation))
+        when(compilationRepository.saveAndFlush(compilation))
                 .thenReturn(updatedCompilation);
 
         CompilationDto result = compilationService.updateCompilation(compilation.getId(), request);
@@ -285,9 +277,8 @@ class CompilationServiceImplTest {
         assertEquals(request.getPinned(), result.getPinned());
 
         verify(compilationRepository).findById(compilation.getId());
-        verify(compilationRepository).findByTitle(request.getTitle());
         verify(eventRepository).findAllById(Set.of(event.getId()));
-        verify(compilationRepository).save(compilation);
+        verify(compilationRepository).saveAndFlush(compilation);
     }
 
     @Test
@@ -302,54 +293,26 @@ class CompilationServiceImplTest {
                 () -> compilationService.updateCompilation(99L, request));
 
         verify(compilationRepository).findById(99L);
-        verify(compilationRepository, never()).findByTitle(anyString());
-        verify(compilationRepository, never()).save(any());
+        verify(compilationRepository, never()).saveAndFlush(any());
     }
 
     @Test
-    void shouldUpdateCompilationWhenTitleBelongsToAnotherCompilationThenThrowConflictException() {
+    void shouldThrowConflictExceptionWhenUpdatingTitleAlreadyExists() {
         UpdateCompilationRequest request = new UpdateCompilationRequest();
         request.setTitle("Existing title");
 
-        Compilation anotherCompilation = new Compilation();
-        anotherCompilation.setId(2L);
-        anotherCompilation.setTitle(request.getTitle());
-        anotherCompilation.setPinned(false);
-        anotherCompilation.setEvents(Set.of());
-
         when(compilationRepository.findById(compilation.getId()))
                 .thenReturn(Optional.of(compilation));
-        when(compilationRepository.findByTitle(request.getTitle()))
-                .thenReturn(Optional.of(anotherCompilation));
+
+        when(compilationRepository.saveAndFlush(any(Compilation.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate title"));
 
         assertThrows(ConflictException.class,
                 () -> compilationService.updateCompilation(compilation.getId(), request));
 
         verify(compilationRepository).findById(compilation.getId());
-        verify(compilationRepository).findByTitle(request.getTitle());
-        verify(compilationRepository, never()).save(any());
-    }
-
-    @Test
-    void updateCompilationWhenTitleBelongsToSameCompilationThenUpdateSuccessfully() {
-        UpdateCompilationRequest request = new UpdateCompilationRequest();
-        request.setTitle(compilation.getTitle());
-
-        when(compilationRepository.findById(compilation.getId()))
-                .thenReturn(Optional.of(compilation));
-        when(compilationRepository.findByTitle(request.getTitle()))
-                .thenReturn(Optional.of(compilation));
-        when(compilationRepository.save(compilation))
-                .thenReturn(compilation);
-
-        CompilationDto result = compilationService.updateCompilation(compilation.getId(), request);
-
-        assertEquals(compilation.getId(), result.getId());
-        assertEquals(request.getTitle(), result.getTitle());
-
-        verify(compilationRepository).findById(compilation.getId());
-        verify(compilationRepository).findByTitle(request.getTitle());
-        verify(compilationRepository).save(compilation);
+        verify(eventRepository, never()).findAllById(any());
+        verify(compilationRepository).saveAndFlush(any(Compilation.class));
     }
 
     @Test
@@ -367,7 +330,7 @@ class CompilationServiceImplTest {
 
         verify(compilationRepository).findById(compilation.getId());
         verify(eventRepository).findAllById(Set.of(1L, 2L));
-        verify(compilationRepository, never()).save(any());
+        verify(compilationRepository, never()).saveAndFlush(any());
     }
 
     @Test
@@ -383,7 +346,7 @@ class CompilationServiceImplTest {
 
         when(compilationRepository.findById(compilation.getId()))
                 .thenReturn(Optional.of(compilation));
-        when(compilationRepository.save(compilation))
+        when(compilationRepository.saveAndFlush(compilation))
                 .thenReturn(updatedCompilation);
 
         CompilationDto result = compilationService.updateCompilation(compilation.getId(), request);
@@ -393,6 +356,6 @@ class CompilationServiceImplTest {
 
         verify(compilationRepository).findById(compilation.getId());
         verify(eventRepository, never()).findAllById(any());
-        verify(compilationRepository).save(compilation);
+        verify(compilationRepository).saveAndFlush(compilation);
     }
 }

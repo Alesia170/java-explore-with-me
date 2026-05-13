@@ -2,6 +2,7 @@ package ru.practicum.compilation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.compilation.CompilationDto;
@@ -50,19 +51,20 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
-        if (compilationRepository.existsByTitle(dto.getTitle())) {
+
+        try {
+            Set<Event> events = getEvents(dto.getEvents());
+
+            Compilation compilation = CompilationMapper.toCompilation(dto, events);
+            Compilation savedCompilation = compilationRepository.saveAndFlush(compilation);
+
+            log.info("Создана подборка с id = {}", savedCompilation.getId());
+
+            return CompilationMapper.toCompilationDto(savedCompilation);
+        } catch (DataIntegrityViolationException e) {
             log.warn("Попытка создать подборку с уже существующем заголовком: {}", dto.getTitle());
             throw new ConflictException("Подборка с таким заголовком уже существует");
         }
-
-        Set<Event> events = getEvents(dto.getEvents());
-
-        Compilation compilation = CompilationMapper.toCompilation(dto, events);
-        Compilation savedCompilation = compilationRepository.save(compilation);
-
-        log.info("Создана подборка с id = {}", savedCompilation.getId());
-
-        return CompilationMapper.toCompilationDto(savedCompilation);
     }
 
     @Override
@@ -80,32 +82,30 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         Compilation compilation = getCompilationOrThrow(compId);
 
-        if (request.getTitle() != null) {
-            compilationRepository.findByTitle(request.getTitle())
-                    .ifPresent(existingTitle -> {
-                        if (!existingTitle.getId().equals(compId)) {
-                            log.warn("Попытка обновить подборку с уже существующем заголовком: {}",
-                                    existingTitle.getTitle());
-                            throw new ConflictException("Подборка с таким заголовком уже существует");
-                        }
-                    });
-            compilation.setTitle(request.getTitle());
+        try {
+            if (request.getTitle() != null) {
+                compilation.setTitle(request.getTitle());
+            }
+
+            if (request.getPinned() != null) {
+                compilation.setPinned(request.getPinned());
+            }
+
+            if (request.getEvents() != null) {
+                Set<Event> events = getEvents(request.getEvents());
+                compilation.setEvents(events);
+            }
+
+            Compilation updateCompilation = compilationRepository.saveAndFlush(compilation);
+
+            log.info("Подборка с id = {} обновлена", updateCompilation.getId());
+
+            return CompilationMapper.toCompilationDto(updateCompilation);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Попытка обновить подборку с уже существующем заголовком: {}", request.getTitle());
+            throw new ConflictException("Подборка с таким заголовком уже существует");
         }
 
-        if (request.getPinned() != null) {
-            compilation.setPinned(request.getPinned());
-        }
-
-        if (request.getEvents() != null) {
-            Set<Event> events = getEvents(request.getEvents());
-            compilation.setEvents(events);
-        }
-
-        Compilation updateCompilation = compilationRepository.save(compilation);
-
-        log.info("Подборка с id = {} обновлена", updateCompilation.getId());
-
-        return CompilationMapper.toCompilationDto(updateCompilation);
     }
 
     private Compilation getCompilationOrThrow(Long compId) {

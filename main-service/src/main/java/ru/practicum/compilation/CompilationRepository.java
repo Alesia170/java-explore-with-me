@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
 
@@ -22,8 +21,4 @@ public interface CompilationRepository extends JpaRepository<Compilation, Long> 
     List<Compilation> findAllWithOffset(@Param("pinned") Boolean pinned,
                                         @Param("from") int from,
                                         @Param("size") int size);
-
-    boolean existsByTitle(String title);
-
-    Optional<Compilation> findByTitle(String title);
 }

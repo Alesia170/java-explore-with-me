@@ -7,7 +7,6 @@ import ru.practicum.dto.event.request.ParticipationRequestDto;
 import ru.practicum.dto.event.update.UpdateEventAdminRequest;
 import ru.practicum.dto.event.update.UpdateEventUserRequest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
@@ -25,14 +24,11 @@ public interface EventService {
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
                                                        EventRequestStatusUpdateRequest request);
 
-    List<EventFullDto> getEventsByAdmin(List<Long> userIds, List<State> states, List<Long> categories,
-                                        LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
+    List<EventFullDto> getEventsByAdmin(AdminEventParams params);
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request);
 
-    List<EventShortDto> getEventsByPublic(String text, List<Long> categoryIds, Boolean paid, LocalDateTime rangeStart,
-                                          LocalDateTime rangeEnd, boolean onlyAvailable,
-                                          EventSort sort, int from, int size);
+    List<EventShortDto> getEventsByPublic(PublicEventsParams params);
 
     EventFullDto getEventByPublic(Long id);
 }

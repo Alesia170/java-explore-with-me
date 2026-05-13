@@ -9,6 +9,7 @@ import ru.practicum.StatsClient;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.EventSort;
+import ru.practicum.dto.event.PublicEventsParams;
 import ru.practicum.dto.stats.EndpointHitRequestDto;
 import ru.practicum.event.EventService;
 import ru.practicum.exception.NotFoundException;
@@ -35,17 +36,7 @@ class PublicEventControllerTest {
 
     @Test
     void shouldReturn200WhenGetEventsByPublicWithValidParams() throws Exception {
-        when(eventService.getEventsByPublic(
-                any(),
-                anyList(),
-                any(),
-                any(),
-                any(),
-                anyBoolean(),
-                any(),
-                anyInt(),
-                anyInt()
-        )).thenReturn(List.of(new EventShortDto()));
+        when(eventService.getEventsByPublic(any(PublicEventsParams.class))).thenReturn(List.of(new EventShortDto()));
 
         mockMvc.perform(get("/events")
                         .param("text", "concert")
@@ -63,19 +54,9 @@ class PublicEventControllerTest {
     @Test
     void shouldReturn200WhenGetEventsByPublicAndStatsClientThrowsException() throws Exception {
         doThrow(new RuntimeException("Stats service unavailable"))
-                .when(statsClient).create(any(EndpointHitRequestDto.class));
+                .when(statsClient).create(anyString(), anyString());
 
-        when(eventService.getEventsByPublic(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                anyBoolean(),
-                any(),
-                anyInt(),
-                anyInt()
-        )).thenReturn(List.of());
+        when(eventService.getEventsByPublic(any(PublicEventsParams.class))).thenReturn(List.of());
 
         mockMvc.perform(get("/events")
                         .param("from", "0")

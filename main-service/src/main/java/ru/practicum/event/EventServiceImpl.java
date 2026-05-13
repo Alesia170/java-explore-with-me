@@ -1,7 +1,5 @@
 package ru.practicum.event;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +45,6 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
-    private final ObjectMapper objectMapper;
 
     @Override
     public List<EventFullDto> getEventsByUser(Long userId, int from, int size) {
@@ -260,27 +257,32 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventFullDto> getEventsByAdmin(List<Long> userIds, List<State> states, List<Long> categories,
-                                               LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-        if (rangeStart != null && rangeEnd != null && rangeStart.isAfter(rangeEnd)) {
+    public List<EventFullDto> getEventsByAdmin(AdminEventParams params) {
+        if (params.getRangeStart() != null && params.getRangeEnd() != null &&
+            params.getRangeStart().isAfter(params.getRangeEnd())) {
             throw new ValidationException("rangeStart не может быть позже rangeEnd");
         }
+
+        LocalDateTime rangeStart = params.getRangeStart();
+        LocalDateTime rangeEnd = params.getRangeEnd();
+        int from = params.getFrom();
+        int size = params.getSize();
 
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
 
-        boolean userIdsIsEmpty = userIds == null || userIds.isEmpty();
-        boolean statesIsEmpty = states == null || states.isEmpty();
-        boolean categoriesIsEmpty = categories == null || categories.isEmpty();
+        boolean userIdsIsEmpty = params.getUsers() == null || params.getUsers().isEmpty();
+        boolean statesIsEmpty = params.getStates() == null || params.getStates().isEmpty();
+        boolean categoriesIsEmpty = params.getCategories() == null || params.getCategories().isEmpty();
 
-        List<Long> safeUserIds = userIdsIsEmpty ? null : userIds;
+        List<Long> safeUserIds = userIdsIsEmpty ? null : params.getUsers();
         List<String> safeStates = statesIsEmpty ? null :
-                states.stream().map(Enum::name).toList();
-        List<Long> safeCategories = categoriesIsEmpty ? null : categories;
+                params.getStates().stream().map(Enum::name).toList();
+        List<Long> safeCategories = categoriesIsEmpty ? null : params.getCategories();
 
         List<Event> events;
-        if (rangeEnd == null) {
+        if (params.getRangeEnd() == null) {
             events = eventRepository.getEventsByAdminWithoutEndDate(
                     safeUserIds,
                     userIdsIsEmpty,
@@ -306,11 +308,7 @@ public class EventServiceImpl implements EventService {
                     size
             );
         }
-        Map<String, Long> views = getViewsFromStats(
-                events.stream()
-                        .map(event -> "/events/" + event.getId())
-                        .toList()
-        );
+        Map<String, Long> views = getViewsFromStats(events);
 
         for (Event event : events) {
             String uri = "/events/" + event.getId();
@@ -395,9 +393,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getEventsByPublic(String text, List<Long> categoryIds, Boolean paid, LocalDateTime rangeStart,
-                                                 LocalDateTime rangeEnd, boolean onlyAvailable,
-                                                 EventSort sort, int from, int size) {
+    public List<EventShortDto> getEventsByPublic(PublicEventsParams params) {
+        LocalDateTime rangeStart = params.getRangeStart();
+        LocalDateTime rangeEnd = params.getRangeEnd();
+        boolean onlyAvailable = params.isOnlyAvailable();
+        int from = params.getFrom();
+        int size = params.getSize();
+
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -406,19 +408,19 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("rangeStart не может быть позже rangeEnd");
         }
 
-        boolean textIsBlank = text == null || text.isBlank();
-        String safeText = textIsBlank ? "" : text;
+        boolean textIsBlank = params.getText() == null || params.getText().isBlank();
+        String safeText = textIsBlank ? "" : params.getText();
 
-        boolean paidIsNull = paid == null;
-        Boolean safePaid = !paidIsNull && paid;
+        boolean paidIsNull = params.getPaid() == null;
+        Boolean safePaid = !paidIsNull && params.getPaid();
 
         LocalDateTime safeRangeEnd = rangeEnd == null
                 ? LocalDateTime.of(2099, 12, 31, 23, 59, 59)
                 : rangeEnd;
 
-        boolean categoriesIsEmpty = categoryIds == null || categoryIds.isEmpty();
-        List<Long> safeCategories = categoriesIsEmpty ? List.of(-1L) : categoryIds;
-        String sortValue = sort == null ? "EVENT_DATE" : sort.name();
+        boolean categoriesIsEmpty = params.getCategories() == null || params.getCategories().isEmpty();
+        List<Long> safeCategories = categoriesIsEmpty ? List.of(-1L) : params.getCategories();
+        String sortValue = params.getSort() == null ? "EVENT_DATE" : params.getSort().name();
 
         List<Event> events = eventRepository.getEventsByPublic(
                 safeText,
@@ -435,11 +437,7 @@ public class EventServiceImpl implements EventService {
                 size
         );
 
-        Map<String, Long> views = getViewsFromStats(
-                events.stream()
-                        .map(event -> "/events/" + event.getId())
-                        .toList()
-        );
+        Map<String, Long> views = getViewsFromStats(events);
 
         for (Event event : events) {
             String uri = "/events/" + event.getId();
@@ -463,7 +461,7 @@ public class EventServiceImpl implements EventService {
 
         int confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
-        Long views = getViewsFromStats("/events/" + eventId);
+        Long views = getViewsFromStats(event);
 
         event.setConfirmedRequests(confirmedRequests);
         event.setViews(views);
@@ -501,31 +499,50 @@ public class EventServiceImpl implements EventService {
         );
     }
 
-    private Long getViewsFromStats(String uri) {
-        return getViewsFromStats(List.of(uri)).getOrDefault(uri, 0L);
+    private Long getViewsFromStats(Event event) {
+        if (event == null || event.getPublishedOn() == null) {
+            return 0L;
+        }
+
+        String uri = "/events/" + event.getId();
+
+        return getViewsFromStats(List.of(event)).getOrDefault(uri, 0L);
     }
 
-    private Map<String, Long> getViewsFromStats(List<String> uris) {
-        if (uris == null || uris.isEmpty()) {
+    private Map<String, Long> getViewsFromStats(List<Event> events) {
+        if (events == null || events.isEmpty()) {
             return Map.of();
         }
 
-        ResponseEntity<Object> response = statsClient.getStats(
-                LocalDateTime.of(2000, 1, 1, 0, 0),
+        List<Event> publishedEvents = events.stream()
+                .filter(event -> event.getPublishedOn() != null)
+                .toList();
+
+        if (publishedEvents.isEmpty()) {
+            return Map.of();
+        }
+
+        LocalDateTime start = publishedEvents.stream()
+                .map(Event::getPublishedOn)
+                .min(LocalDateTime::compareTo)
+                .orElse(LocalDateTime.now());
+
+        List<String> uris = publishedEvents.stream()
+                .map(event -> "/events/" + event.getId())
+                .toList();
+
+        ResponseEntity<List<ViewStatsDto>> response = statsClient.getStats(
+                start,
                 LocalDateTime.now(),
                 uris,
                 true
         );
 
-        if (response.getBody() == null) {
+        List<ViewStatsDto> stats = response.getBody();
+
+        if (stats == null || stats.isEmpty()) {
             return Map.of();
         }
-
-        List<ViewStatsDto> stats = objectMapper.convertValue(
-                response.getBody(),
-                new TypeReference<>() {
-                }
-        );
 
         return stats.stream()
                 .collect(Collectors.toMap(

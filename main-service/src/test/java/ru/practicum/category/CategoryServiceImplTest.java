@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.event.EventRepository;
@@ -94,10 +95,7 @@ public class CategoryServiceImplTest {
         savedCategory.setId(3L);
         savedCategory.setName("Дискотеки");
 
-        when(categoryRepository.existsByName(savedCategory.getName()))
-                .thenReturn(false);
-
-        when(categoryRepository.save(any(Category.class)))
+        when(categoryRepository.saveAndFlush(any(Category.class)))
                 .thenReturn(savedCategory);
 
         CategoryDto result = categoryService.createCategory(newCategoryDto);
@@ -105,8 +103,7 @@ public class CategoryServiceImplTest {
         assertThat(result.getId()).isEqualTo(3L);
         assertThat(result.getName()).isEqualTo("Дискотеки");
 
-        verify(categoryRepository).existsByName("Дискотеки");
-        verify(categoryRepository).save(any(Category.class));
+        verify(categoryRepository).saveAndFlush(any(Category.class));
     }
 
     @Test
@@ -114,15 +111,15 @@ public class CategoryServiceImplTest {
         NewCategoryDto newCategoryDto = new NewCategoryDto();
         newCategoryDto.setName("Концерты");
 
-        when(categoryRepository.existsByName("Концерты"))
-                .thenReturn(true);
+        when(categoryRepository.saveAndFlush(any(Category.class)))
+                .thenThrow(new DataIntegrityViolationException
+                        ("Категория с именем " + newCategoryDto.getName() + " уже существует"));
 
         assertThatThrownBy(() -> categoryService.createCategory(newCategoryDto))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Категория с именем " + newCategoryDto.getName() + " уже существует");
 
-        verify(categoryRepository).existsByName("Концерты");
-        verify(categoryRepository, never()).save(any(Category.class));
+        verify(categoryRepository).saveAndFlush(any(Category.class));
     }
 
     @Test
