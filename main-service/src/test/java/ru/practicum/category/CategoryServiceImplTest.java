@@ -112,8 +112,9 @@ public class CategoryServiceImplTest {
         newCategoryDto.setName("Концерты");
 
         when(categoryRepository.saveAndFlush(any(Category.class)))
-                .thenThrow(new DataIntegrityViolationException
-                        ("Категория с именем " + newCategoryDto.getName() + " уже существует"));
+                .thenThrow(new DataIntegrityViolationException(
+                        "Категория с именем " + newCategoryDto.getName() + " уже существует"
+                ));
 
         assertThatThrownBy(() -> categoryService.createCategory(newCategoryDto))
                 .isInstanceOf(ConflictException.class)

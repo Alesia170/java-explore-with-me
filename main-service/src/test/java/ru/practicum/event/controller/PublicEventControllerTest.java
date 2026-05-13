@@ -10,7 +10,6 @@ import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.EventSort;
 import ru.practicum.dto.event.PublicEventsParams;
-import ru.practicum.dto.stats.EndpointHitRequestDto;
 import ru.practicum.event.EventService;
 import ru.practicum.exception.NotFoundException;
 
