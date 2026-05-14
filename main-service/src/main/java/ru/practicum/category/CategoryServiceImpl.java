@@ -2,7 +2,6 @@ package ru.practicum.category;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.category.CategoryDto;
@@ -47,17 +46,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto createCategory(NewCategoryDto categoryDto) {
-        try {
-            Category category = CategoryMapper.toCategory(categoryDto);
-            Category savedCategory = categoryRepository.saveAndFlush(category);
+        Category category = CategoryMapper.toCategory(categoryDto);
+        Category savedCategory = categoryRepository.saveAndFlush(category);
 
-            log.info("Категория создана");
+        log.info("Категория создана");
 
-            return CategoryMapper.toCategoryDto(savedCategory);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Попытка создать категорию с уже существующей категорией");
-            throw new ConflictException("Категория с именем " + categoryDto.getName() + " уже существует");
-        }
+        return CategoryMapper.toCategoryDto(savedCategory);
     }
 
     @Override
@@ -78,21 +72,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryDto updateCategory(Long catId, NewCategoryDto categoryDto) {
         Category category = getCategoryOrThrow(catId);
-        try {
-            if (categoryDto.getName() != null) {
-                category.setName(categoryDto.getName());
-            }
-
-            Category updatedCategory = categoryRepository.saveAndFlush(category);
-
-            log.info("Категория с id = {} обновлена", catId);
-
-            return CategoryMapper.toCategoryDto(updatedCategory);
-
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Невозможно обновить имя, так как оно уже существует");
-            throw new ConflictException("Категория " + categoryDto.getName() + " уже существует");
+        if (categoryDto.getName() != null) {
+            category.setName(categoryDto.getName());
         }
+
+        Category updatedCategory = categoryRepository.saveAndFlush(category);
+
+        log.info("Категория с id = {} обновлена", catId);
+
+        return CategoryMapper.toCategoryDto(updatedCategory);
     }
 
     private Category getCategoryOrThrow(Long catId) {

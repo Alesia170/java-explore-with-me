@@ -1,6 +1,7 @@
 package ru.practicum.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -102,6 +103,18 @@ public class ErrorHandler {
                 exception.getMessage(),
                 "Incorrectly made request.",
                 HttpStatus.BAD_REQUEST.name(),
+                LocalDateTime.now().format(FORMATTER)
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        return new ApiError(
+                List.of(),
+                exception.getMessage(),
+                "Integrity constraint has been violated.",
+                HttpStatus.CONFLICT.name(),
                 LocalDateTime.now().format(FORMATTER)
         );
     }

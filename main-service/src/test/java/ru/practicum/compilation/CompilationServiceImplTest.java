@@ -13,7 +13,6 @@ import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
-import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.User;
 
@@ -177,7 +176,7 @@ class CompilationServiceImplTest {
         when(compilationRepository.saveAndFlush(any(Compilation.class)))
                 .thenThrow(new DataIntegrityViolationException("Подборка с таким заголовком уже существует"));
 
-        assertThrows(ConflictException.class,
+        assertThrows(DataIntegrityViolationException.class,
                 () -> compilationService.createCompilation(request));
 
         verify(eventRepository).findAllById(Set.of(event.getId()));
@@ -297,7 +296,7 @@ class CompilationServiceImplTest {
     }
 
     @Test
-    void shouldThrowConflictExceptionWhenUpdatingTitleAlreadyExists() {
+    void shouldThrowDataIntegrityViolationExceptionWhenUpdatingTitleAlreadyExists() {
         UpdateCompilationRequest request = new UpdateCompilationRequest();
         request.setTitle("Existing title");
 
@@ -307,7 +306,7 @@ class CompilationServiceImplTest {
         when(compilationRepository.saveAndFlush(any(Compilation.class)))
                 .thenThrow(new DataIntegrityViolationException("duplicate title"));
 
-        assertThrows(ConflictException.class,
+        assertThrows(DataIntegrityViolationException.class,
                 () -> compilationService.updateCompilation(compilation.getId(), request));
 
         verify(compilationRepository).findById(compilation.getId());
