@@ -1,8 +1,8 @@
 package ru.practicum;
 
 import org.junit.jupiter.api.Test;
-import ru.practicum.dto.EndpointHitRequestDto;
-import ru.practicum.dto.EndpointHitResponseDto;
+import ru.practicum.dto.stats.EndpointHitRequestDto;
+import ru.practicum.dto.stats.EndpointHitResponseDto;
 import ru.practicum.server.EndpointHit;
 import ru.practicum.server.EndpointHitMapper;
 

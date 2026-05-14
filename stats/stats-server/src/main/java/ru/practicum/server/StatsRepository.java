@@ -3,7 +3,7 @@ package ru.practicum.server;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.dto.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,10 +11,10 @@ import java.util.List;
 public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
 
     @Query("""
-            SELECT new ru.practicum.dto.ViewStatsDto(
+            SELECT new ru.practicum.dto.stats.ViewStatsDto(
                 e.app,
                 e.uri,
-                count(e)
+                count(DISTINCT e.ip)
             )
             FROM EndpointHit AS e
             WHERE e.timestamp BETWEEN :start AND :end
@@ -25,7 +25,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
                                 @Param("end") LocalDateTime end);
 
     @Query("""
-            SELECT new ru.practicum.dto.ViewStatsDto(
+            SELECT new ru.practicum.dto.stats.ViewStatsDto(
                 e.app,
                 e.uri,
                 count(DISTINCT e.ip)
@@ -39,7 +39,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
                                       @Param("end") LocalDateTime end);
 
     @Query("""
-            SELECT new ru.practicum.dto.ViewStatsDto(
+            SELECT new ru.practicum.dto.stats.ViewStatsDto(
                 e.app,
                 e.uri,
                 count(e)
@@ -55,7 +55,7 @@ public interface StatsRepository extends JpaRepository<EndpointHit, Long> {
                                       @Param("uris") List<String> uris);
 
     @Query("""
-            SELECT new ru.practicum.dto.ViewStatsDto(
+            SELECT new ru.practicum.dto.stats.ViewStatsDto(
                 e.app,
                 e.uri,
                 count(DISTINCT e.ip)

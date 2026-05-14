@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.dto.stats.ViewStatsDto;
 
 import java.util.List;
 
@@ -20,6 +21,24 @@ public class BaseClient {
 
     protected <T> ResponseEntity<Object> post(T body) {
         return makeAndSendRequest(HttpMethod.POST, "/hit", body);
+    }
+
+    protected ResponseEntity<List<ViewStatsDto>> getStats(String path) {
+        ResponseEntity<ViewStatsDto[]> response = rest.exchange(
+                path,
+                HttpMethod.GET,
+                null,
+                ViewStatsDto[].class
+        );
+
+        List<ViewStatsDto> body = response.getBody() == null
+                ? List.of()
+                : List.of(response.getBody());
+
+        return ResponseEntity
+                .status(response.getStatusCode())
+                .headers(response.getHeaders())
+                .body(body);
     }
 
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method,

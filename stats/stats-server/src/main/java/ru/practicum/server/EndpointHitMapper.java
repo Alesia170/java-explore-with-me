@@ -2,8 +2,8 @@ package ru.practicum.server;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.practicum.dto.EndpointHitRequestDto;
-import ru.practicum.dto.EndpointHitResponseDto;
+import ru.practicum.dto.stats.EndpointHitRequestDto;
+import ru.practicum.dto.stats.EndpointHitResponseDto;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EndpointHitMapper {

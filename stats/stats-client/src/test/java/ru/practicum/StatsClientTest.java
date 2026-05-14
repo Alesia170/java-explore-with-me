@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.test.web.client.MockRestServiceServer;
-import ru.practicum.dto.EndpointHitRequestDto;
+import org.springframework.web.client.HttpClientErrorException;
+import ru.practicum.dto.stats.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -27,18 +29,12 @@ class StatsClientTest {
     @BeforeEach
     void setUp() {
         RestTemplateBuilder builder = new RestTemplateBuilder();
-        statsClient = new StatsClient("http://localhost:9090", builder);
+        statsClient = new StatsClient("http://localhost:9090", "ewm-main-service", builder);
         mockServer = MockRestServiceServer.bindTo(statsClient.rest).build();
     }
 
     @Test
     void shouldCreateHit() {
-        EndpointHitRequestDto dto = new EndpointHitRequestDto();
-        dto.setApp("ewm-main-service");
-        dto.setUri("/events/1");
-        dto.setIp("192.168.0.1");
-        dto.setTimestamp(LocalDateTime.of(2024, 1, 10, 12, 30, 0));
-
         String responseJson = "{"
                               + "\"id\":1,"
                               + "\"app\":\"ewm-main-service\","
@@ -55,7 +51,7 @@ class StatsClientTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(responseJson));
 
-        ResponseEntity<Object> response = statsClient.create(dto);
+        ResponseEntity<Object> response = statsClient.create("/events/1", "192.168.0.1");
 
         assertThat(response.getStatusCode(), equalTo(HttpStatus.CREATED));
         assertThat(response.getBody(), notNullValue());
@@ -92,7 +88,7 @@ class StatsClientTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
 
-        ResponseEntity<Object> response = statsClient.getStats(start, end, List.of("/events/1", "/events/2"), true);
+        ResponseEntity<List<ViewStatsDto>> response = statsClient.getStats(start, end, List.of("/events/1", "/events/2"), true);
 
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         assertThat(response.getBody(), notNullValue());
@@ -114,7 +110,7 @@ class StatsClientTest {
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-        ResponseEntity<Object> response = statsClient.getStats(start, end, null, false);
+        ResponseEntity<List<ViewStatsDto>> response = statsClient.getStats(start, end, null, false);
 
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         assertThat(response.getBody(), notNullValue());
@@ -123,7 +119,7 @@ class StatsClientTest {
     }
 
     @Test
-    void shouldReturnBadRequestWhenServerReturnsError() {
+    void shouldThrowBadRequestWhenServerReturnsError() {
         LocalDateTime start = LocalDateTime.of(2024, 3, 2, 10, 0, 0);
         LocalDateTime end = LocalDateTime.of(2024, 3, 1, 10, 0, 0);
 
@@ -140,10 +136,13 @@ class StatsClientTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(errorBody));
 
-        ResponseEntity<Object> response = statsClient.getStats(start, end, null, false);
+        HttpClientErrorException exception = assertThrows(
+                HttpClientErrorException.BadRequest.class,
+                () -> statsClient.getStats(start, end, null, false)
+        );
 
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
-        assertThat(response.getBody(), equalTo(errorBody));
+        assertThat(exception.getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+        assertThat(exception.getResponseBodyAsString(), equalTo(errorBody));
 
         mockServer.verify();
     }
