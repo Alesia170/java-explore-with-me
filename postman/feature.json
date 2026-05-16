@@ -21,6 +21,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"cat1\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -78,6 +81,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"user1\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -130,6 +136,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"user2\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -187,6 +196,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"event1\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -200,7 +212,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"annotation\": \"Rock music festival annotation text\",\n  \"category\": 1,\n  \"description\": \"Rock music festival full description with enough characters\",\n  \"eventDate\": \"2026-06-20 18:00:00\",\n  \"location\": {\n    \"lat\": 55.751244,\n    \"lon\": 37.618423\n  },\n  \"paid\": true,\n  \"participantLimit\": 100,\n  \"requestModeration\": true,\n  \"title\": \"Rock Music Festival\"\n}",
+              "raw": "{\n  \"annotation\": \"Rock music festival annotation text\",\n  \"category\": {{cat1}},\n  \"description\": \"Rock music festival full description with enough characters\",\n  \"eventDate\": \"2026-06-20 18:00:00\",\n  \"location\": {\n    \"lat\": 55.751244,\n    \"lon\": 37.618423\n  },\n  \"paid\": true,\n  \"participantLimit\": 100,\n  \"requestModeration\": true,\n  \"title\": \"Rock Music Festival\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -208,7 +220,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events",
+              "raw": "http://localhost:8080/users/{{user1}}/events",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -216,7 +228,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events"
               ]
             }
@@ -234,6 +246,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"event2\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -243,11 +258,14 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"annotation\": \"Live concert with popular bands\",\n  \"category\": 1,\n  \"description\": \"Live concert with popular bands and others\",\n  \"eventDate\": \"2026-06-06 21:00:00\",\n  \"location\": {\n    \"lat\": 55.76,\n    \"lon\": 37.64\n  },\n  \"paid\": false,\n  \"participantLimit\": 50,\n  \"requestModeration\": true,\n  \"title\": \"Popular concert\"\n}",
+              "raw": "{\n  \"annotation\": \"Live concert with popular bands\",\n  \"category\": {{cat1}},\n  \"description\": \"Live concert with popular bands and others\",\n  \"eventDate\": \"2026-06-06 21:00:00\",\n  \"location\": {\n    \"lat\": 55.76,\n    \"lon\": 37.64\n  },\n  \"paid\": false,\n  \"participantLimit\": 50,\n  \"requestModeration\": true,\n  \"title\": \"Popular concert\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -255,7 +273,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events",
+              "raw": "http://localhost:8080/users/{{user1}}/events",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -263,7 +281,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events"
               ]
             }
@@ -281,6 +299,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"event3\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -294,7 +315,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"annotation\": \"Live concert with popular singers\",\n  \"category\": 1,\n  \"description\": \"Live concert with popular singers and others\",\n  \"eventDate\": \"2026-07-06 21:00:00\",\n  \"location\": {\n    \"lat\": 55.76,\n    \"lon\": 37.64\n  },\n  \"paid\": false,\n  \"participantLimit\": 50,\n  \"requestModeration\": true,\n  \"title\": \"Popular singers\"\n}",
+              "raw": "{\n  \"annotation\": \"Live concert with popular singers\",\n  \"category\": {{cat1}},\n  \"description\": \"Live concert with popular singers and others\",\n  \"eventDate\": \"2026-07-06 21:00:00\",\n  \"location\": {\n    \"lat\": 55.76,\n    \"lon\": 37.64\n  },\n  \"paid\": false,\n  \"participantLimit\": 50,\n  \"requestModeration\": true,\n  \"title\": \"Popular singers\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -302,7 +323,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events",
+              "raw": "http://localhost:8080/users/{{user1}}/events",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -310,7 +331,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events"
               ]
             }
@@ -351,7 +372,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/events/1",
+              "raw": "http://localhost:8080/admin/events/{{event1}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -360,7 +381,7 @@
               "path": [
                 "admin",
                 "events",
-                "1"
+                "{{event1}}"
               ]
             }
           },
@@ -406,7 +427,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/events/2",
+              "raw": "http://localhost:8080/admin/events/{{event2}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -415,7 +436,7 @@
               "path": [
                 "admin",
                 "events",
-                "2"
+                "{{event2}}"
               ]
             }
           },
@@ -437,6 +458,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"comment1\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -458,7 +482,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/1/comments",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event1}}/comments",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -466,9 +490,9 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ]
             }
@@ -486,6 +510,9 @@
                   "    pm.response.to.have.status(201);",
                   "    pm.response.to.be.withBody;",
                   "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set(\"comment2\", json.id);",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -507,7 +534,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/1/comments",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event1}}/comments",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -515,9 +542,9 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ]
             }
@@ -558,7 +585,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/1/comments",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event1}}/comments",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -566,9 +593,9 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ]
             }
@@ -607,7 +634,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/1/comments/1",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event1}}/comments/{{comment1}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -615,11 +642,11 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments",
-                "1"
+                "{{comment1}}"
               ]
             }
           },
@@ -662,7 +689,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/3/comments",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event3}}/comments",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -670,9 +697,9 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "3",
+                "{{event3}}",
                 "comments"
               ]
             }
@@ -716,7 +743,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/2/events/1/comments/1",
+              "raw": "http://localhost:8080/users/{{user2}}/events/{{event1}}/comments/{{comment1}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -724,11 +751,11 @@
               "port": "8080",
               "path": [
                 "users",
-                "2",
+                "{{user2}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments",
-                "1"
+                "{{comment1}}"
               ]
             }
           },
@@ -761,7 +788,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/events/1/comments?from=0&size=10",
+              "raw": "http://localhost:8080/events/{{event1}}/comments?from=0&size=10",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -769,7 +796,7 @@
               "port": "8080",
               "path": [
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ],
               "query": [
@@ -813,7 +840,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/events/1/comments?from=0&size=0",
+              "raw": "http://localhost:8080/events/{{event1}}/comments?from=0&size=0",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -821,7 +848,7 @@
               "port": "8080",
               "path": [
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ],
               "query": [
@@ -865,7 +892,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/events/1/comments?from=-1&size=10",
+              "raw": "http://localhost:8080/events/{{event1}}/comments?from=-1&size=10",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -873,7 +900,7 @@
               "port": "8080",
               "path": [
                 "events",
-                "1",
+                "{{event1}}",
                 "comments"
               ],
               "query": [
@@ -917,7 +944,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/users/1/comments?from=0&size=10",
+              "raw": "http://localhost:8080/users/{{user1}}/comments?from=0&size=10",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -925,7 +952,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "comments"
               ],
               "query": [
@@ -970,7 +997,7 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/users/2/events/1/comments/2",
+              "raw": "http://localhost:8080/users/{{user2}}/events/{{event1}}/comments/{{comment2}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -978,11 +1005,11 @@
               "port": "8080",
               "path": [
                 "users",
-                "2",
+                "{{user2}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments",
-                "2"
+                "{{comment2}}"
               ]
             }
           },
@@ -1013,7 +1040,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "http://localhost:8080/users/1/events/1/comments/1",
+              "raw": "http://localhost:8080/users/{{user1}}/events/{{event1}}/comments/{{comment1}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1021,11 +1048,11 @@
               "port": "8080",
               "path": [
                 "users",
-                "1",
+                "{{user1}}",
                 "events",
-                "1",
+                "{{event1}}",
                 "comments",
-                "1"
+                "{{comment1}}"
               ]
             }
           },
@@ -1053,7 +1080,7 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/admin/comments/2",
+              "raw": "http://localhost:8080/admin/comments/{{comment2}}",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1062,7 +1089,7 @@
               "path": [
                 "admin",
                 "comments",
-                "2"
+                "{{comment2}}"
               ]
             }
           },
@@ -1093,6 +1120,40 @@
           ""
         ]
       }
+    }
+  ],
+  "variable": [
+    {
+      "key": "cat1",
+      "value": ""
+    },
+    {
+      "key": "user1",
+      "value": ""
+    },
+    {
+      "key": "user2",
+      "value": ""
+    },
+    {
+      "key": "event1",
+      "value": ""
+    },
+    {
+      "key": "event2",
+      "value": ""
+    },
+    {
+      "key": "event3",
+      "value": ""
+    },
+    {
+      "key": "comment1",
+      "value": ""
+    },
+    {
+      "key": "comment2",
+      "value": ""
     }
   ]
 }
