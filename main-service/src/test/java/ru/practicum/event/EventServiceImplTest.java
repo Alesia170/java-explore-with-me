@@ -82,6 +82,7 @@ class EventServiceImplTest {
         event.setRequestModeration(true);
         event.setConfirmedRequests(0);
         event.setViews(0L);
+        event.setComments(0L);
         event.setState(State.PENDING);
 
         ru.practicum.event.location.Location location = new ru.practicum.event.location.Location();
@@ -155,6 +156,7 @@ class EventServiceImplTest {
         savedEvent.setState(State.PENDING);
         savedEvent.setConfirmedRequests(0);
         savedEvent.setViews(0L);
+        savedEvent.setComments(0L);
         savedEvent.setCreatedOn(LocalDateTime.now());
 
         when(userRepository.findById(user.getId()))
@@ -170,6 +172,7 @@ class EventServiceImplTest {
         assertEquals(request.getTitle(), result.getTitle());
         assertEquals(category.getId(), result.getCategory().getId());
         assertEquals(user.getId(), result.getInitiator().getId());
+        assertEquals(0L, result.getComments());
 
         verify(userRepository).findById(user.getId());
         verify(categoryRepository).findById(category.getId());
@@ -601,6 +604,7 @@ class EventServiceImplTest {
     @Test
     void shouldGetEventByPublicWhenEventExists() {
         event.setState(State.PUBLISHED);
+        event.setComments(2L);
 
         ViewStatsDto stat = new ViewStatsDto();
         stat.setUri("/events/" + event.getId());
@@ -618,6 +622,7 @@ class EventServiceImplTest {
         assertEquals(event.getId(), result.getId());
         assertEquals(10L, result.getViews());
         assertEquals(3, result.getConfirmedRequests());
+        assertEquals(2L, result.getComments());
 
         verify(eventRepository).getEventByPublic(event.getId());
         verify(requestRepository).countByEventIdAndStatus(eq(event.getId()), any());
