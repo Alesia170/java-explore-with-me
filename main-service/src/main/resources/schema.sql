@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS events (
   state VARCHAR(20) NOT NULL CHECK (state IN ('PENDING','PUBLISHED', 'CANCELED')),
   title VARCHAR(120) NOT NULL,
   views BIGINT NOT NULL DEFAULT 0,
+  comments BIGINT NOT NULL DEFAULT 0,
   CONSTRAINT fk_events_to_categories FOREIGN KEY(category_id) REFERENCES categories(id),
   CONSTRAINT fk_events_to_users FOREIGN KEY(initiator_id) REFERENCES users(id)
 );

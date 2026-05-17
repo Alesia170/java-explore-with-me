@@ -36,7 +36,8 @@ public class CommentServiceImpl implements CommentService {
         User author = getUserOrThrow(userId);
 
         if (event.getState() != State.PUBLISHED) {
-            log.warn("Попытка прокомментировать событие, которое еще не опубликовано");
+            log.warn("Попытка прокомментировать неопубликованное событие: eventId = {}, userId = {}, state = {}",
+                    eventId, userId, event.getState());
             throw new ConflictException("Нельзя комментировать события, которые еще не опубликованы");
         }
 
@@ -47,7 +48,11 @@ public class CommentServiceImpl implements CommentService {
 
         Comment savedComment = commentRepository.saveAndFlush(comment);
 
-        log.info("Комментарий успешно сохранен");
+        event.setComments(event.getComments() + 1);
+        eventRepository.save(event);
+
+        log.info("Комментарий успешно сохранен: commentId = {}, eventId = {}, userId = {}",
+                savedComment.getId(), eventId, userId);
 
         return CommentMapper.toCommentDto(savedComment);
     }
@@ -64,7 +69,8 @@ public class CommentServiceImpl implements CommentService {
         }
 
         if (!comment.getAuthor().getId().equals(userId)) {
-            log.warn("Попытка редактировать чужой комментарий");
+            log.warn("Попытка редактировать чужой комментарий: commentId = {}, userId = {}, authorId = {}",
+                    commentId, userId, comment.getAuthor().getId());
             throw new ForbiddenException("Пользователь c id = " + userId + " не является автором комментария");
         }
 
@@ -78,7 +84,8 @@ public class CommentServiceImpl implements CommentService {
 
         Comment updatedComment = commentRepository.saveAndFlush(comment);
 
-        log.info("Комментарий успешно обновлен");
+        log.info("Комментарий успешно обновлен: commentId = {}, eventId = {}, userId = {}",
+                updatedComment.getId(), eventId, userId);
 
         return CommentMapper.toCommentDto(updatedComment);
     }
@@ -87,7 +94,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long commentId, Long userId, Long eventId) {
         Comment comment = getCommentOrThrow(commentId);
-        getEventOrThrow(eventId);
+        Event event = getEventOrThrow(eventId);
         getUserOrThrow(userId);
 
         if (!comment.getEvent().getId().equals(eventId)) {
@@ -95,11 +102,17 @@ public class CommentServiceImpl implements CommentService {
         }
 
         if (!comment.getAuthor().getId().equals(userId)) {
-            log.warn("Попытка удалить чужой комментарий");
+            log.warn("Попытка удалить чужой комментарий: commentId = {}, userId = {}, authorId = {}",
+                    commentId, userId, comment.getAuthor().getId());
             throw new ForbiddenException("Пользователь с id = " + userId + " не является автором комментария");
         }
 
         commentRepository.delete(comment);
+
+        event.setComments(Math.max(0L, event.getComments() - 1));
+        eventRepository.save(event);
+
+        log.info("Комментарий удален: commentId = {}, eventId = {}, userId = {}", commentId, eventId, userId);
     }
 
     @Override
@@ -137,10 +150,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteCommentByAdmin(Long commentId) {
         Comment comment = getCommentOrThrow(commentId);
+        Event event = comment.getEvent();
 
         commentRepository.delete(comment);
 
-        log.info("Комментарий успешно удален админом");
+        event.setComments(Math.max(0L, event.getComments() - 1));
+        eventRepository.save(event);
+
+        log.info("Комментарий удален админом: commentId = {}, eventId = {}", commentId, event.getId());
     }
 
     private User getUserOrThrow(Long userId) {

@@ -70,4 +70,7 @@ public class Event {
 
     @Column(nullable = false)
     private Long views = 0L;
+
+    @Column(name = "comments", nullable = false)
+    private Long comments = 0L;
 }

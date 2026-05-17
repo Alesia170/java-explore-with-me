@@ -552,6 +552,48 @@
           "response": []
         },
         {
+          "name": "Получить количество комментариев у первого события",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Получено два комментария у первого события\", function () {",
+                  "    pm.response.to.be.ok;",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "",
+                  "    pm.expect(json).to.have.property(\"comments\");",
+                  "    pm.expect(json.comments).to.eql(2);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/events/{{event1}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "events",
+                "{{event1}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Попытка опубликовать пустой комментарий",
           "event": [
             {
@@ -1053,6 +1095,55 @@
                 "{{event1}}",
                 "comments",
                 "{{comment1}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить количество комментариев после удаления",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"После удаления комментария счетчик уменьшился\", function () {",
+                  "    pm.response.to.be.ok;",
+                  "    pm.response.to.be.withBody;",
+                  "    pm.response.to.be.json;",
+                  "",
+                  "    const json = pm.response.json();",
+                  "",
+                  "    pm.expect(json).to.have.property(\"comments\");",
+                  "    pm.expect(json.comments).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text\": \"updated comment\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/events/{{event1}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "events",
+                "{{event1}}"
               ]
             }
           },

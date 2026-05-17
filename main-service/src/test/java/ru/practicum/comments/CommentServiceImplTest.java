@@ -64,10 +64,12 @@ class CommentServiceImplTest {
         event = new Event();
         event.setId(10L);
         event.setState(State.PUBLISHED);
+        event.setComments(0L);
 
         anotherEvent = new Event();
         anotherEvent.setId(20L);
         anotherEvent.setState(State.PUBLISHED);
+        anotherEvent.setComments(0L);
 
         comment = new Comment();
         comment.setId(100L);
@@ -96,10 +98,12 @@ class CommentServiceImplTest {
         assertNotNull(result);
         assertEquals(101L, result.getId());
         assertEquals(newCommentDto.getText(), result.getText());
+        assertEquals(1L, event.getComments());
 
         verify(eventRepository).findById(event.getId());
         verify(userRepository).findById(author.getId());
         verify(commentRepository).saveAndFlush(any(Comment.class));
+        verify(eventRepository).save(event);
     }
 
     @Test
@@ -305,12 +309,17 @@ class CommentServiceImplTest {
 
     @Test
     void deleteCommentWhenValidRequestThenDeleteComment() {
+        event.setComments(1L);
+
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
 
         commentService.deleteComment(comment.getId(), author.getId(), event.getId());
 
+        assertEquals(0L, event.getComments());
+
+        verify(eventRepository).save(event);
         verify(commentRepository).delete(comment);
     }
 
@@ -438,9 +447,12 @@ class CommentServiceImplTest {
 
     @Test
     void deleteCommentByAdminWhenCommentExistsThenDeleteComment() {
+        event.setComments(1L);
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
 
         commentService.deleteCommentByAdmin(comment.getId());
+
+        assertEquals(0L, event.getComments());
 
         verify(commentRepository).delete(comment);
     }
@@ -457,5 +469,20 @@ class CommentServiceImplTest {
         assertEquals("Комментарий с id = " + comment.getId() + " не существует", exception.getMessage());
 
         verify(commentRepository, never()).delete(any(Comment.class));
+    }
+
+    @Test
+    void deleteCommentWhenCommentsCountIsZeroThenShouldNotBecomeNegative() {
+
+        when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(userRepository.findById(author.getId())).thenReturn(Optional.of(author));
+
+        commentService.deleteComment(comment.getId(), author.getId(), event.getId());
+
+        assertEquals(0L, event.getComments());
+
+        verify(commentRepository).delete(comment);
+        verify(eventRepository).save(event);
     }
 }
